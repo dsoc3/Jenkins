@@ -9,7 +9,7 @@ By using this work, you agree to the terms and conditions of the Creative Common
 
 For full license terms, please visit: https://creativecommons.org/licenses/by-nc/4.0/legalcode
 
-Attribution: DevSecOps Club
+Attribution: DevSecOps Club (DSOC3)
 
 Original Work: https://github.com/dsoc3/Jenkins.git
 
