@@ -1,0 +1,5 @@
+FROM docker:28.3.3-cli-alpine3.22
+
+RUN apk update && \
+    apk add --no-cache openjdk21 bash && \
+    java -version

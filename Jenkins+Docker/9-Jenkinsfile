@@ -1,0 +1,69 @@
+pipeline {
+    //agent any
+     agent {
+        label 'Jenkins-Agent'
+            }
+    stages {
+        stage('VM Build') {
+            steps {
+                sh """
+                    echo Building VM APP
+                    java --version
+                    pwd
+                """
+            } //EO steps
+        } // EO stage VM Build
+        stage('Maven Build') {
+            agent {
+        label 'maven'
+            }
+            /* agent {
+                docker{
+                    image 'maven'
+                }
+            }
+            */
+            steps {
+                sh """
+                    echo Building Maven APP
+                    mvn --version
+                """
+            } //EO steps
+        } // EO stage Maven Build
+        stage('Node Build') {
+            agent {
+        label 'node'
+            }
+            /* agent {
+                docker{
+                    image 'node'
+                }
+            }
+            */
+            steps {
+                sh """
+                    echo Building Node APP
+                    node --version
+                    pwd
+                """
+            } //EO steps
+        } // EO stage Node Build
+        stage('Python Build') {
+           agent {
+        label 'python'
+            }
+            /* agent {
+                docker{
+                    image 'python'
+                }
+            }
+            */
+            steps {
+                sh """
+                    echo Building Maven APP
+                    python3 --version
+                """
+            } //EO steps
+        } // EO stage Python Build
+    }// EO stages
+}// EO pipeline

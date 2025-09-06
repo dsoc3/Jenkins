@@ -1,0 +1,57 @@
+// Jenkinsfile - Enhanced for Unique Docker Tag and Redeployment
+pipeline {
+    agent none
+
+    environment {
+        SHARED_DIR = "${WORKSPACE}/docker-runtime"
+        IMAGE_TAG = "dsoc3-webapp-${env.BUILD_ID}"
+        CONTAINER_NAME = "dsoc3-webapp"
+    }
+
+    stages {
+        stage('Maven') {
+            agent { label 'maven' }
+            steps {
+                script {
+                    SHARED_DIR = "${WORKSPACE}/docker-runtime"
+                }
+                sh """
+                    mkdir -p $SHARED_DIR
+                    git clone https://github.com/dsoc3/DSOC3-WebApp.git $SHARED_DIR
+                    cd $SHARED_DIR
+                    mvn clean package -DskipTests
+                    cp target/dsoc3-webapp.war $SHARED_DIR/
+                    ls -lrt $SHARED_DIR
+                """
+                stash includes: 'docker-runtime/**', name: 'runtime-data'
+            }
+        }
+
+        stage('Docker Build') {
+            agent { label 'Docker-Agent' }
+            steps {
+                unstash 'runtime-data'
+                sh """
+                    echo Building Docker Image with tag $IMAGE_TAG
+                    mkdir -p $SHARED_DIR
+                    echo 'FROM tomcat' > $SHARED_DIR/Dockerfile
+                    echo 'COPY dsoc3-webapp.war /usr/local/tomcat/webapps/' >> $SHARED_DIR/Dockerfile
+                    docker build -f $SHARED_DIR/Dockerfile -t $IMAGE_TAG $SHARED_DIR
+                    docker images | grep dsoc3-webapp
+                """
+            }
+        }
+
+        stage('Run Container on Remote Host') {
+            agent { label 'Docker-Agent' }
+            steps {
+                sh """
+                    echo Redeploying container: $CONTAINER_NAME
+                    docker rm -f $CONTAINER_NAME || true
+                    docker run -d --name $CONTAINER_NAME -p 9191:8080 $IMAGE_TAG
+                    docker ps | grep $CONTAINER_NAME
+                """
+            }
+        }
+    }
+}

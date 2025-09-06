@@ -1,0 +1,42 @@
+pipeline {
+    agent {
+        label 'Docker-Agent'
+    }
+
+    environment {
+        IMAGE_TAG = "dsoc3-webapp:${env.BUILD_ID}"
+        CONTAINER_NAME = "dsoc3-webapp"
+        HOST_PORT = "9191"
+        CONTAINER_PORT = "8080"
+    }
+
+    stages {
+        stage('Clone Dockerfile Repo') {
+            steps {
+                sh '''
+                    git clone https://github.com/dsoc3/Docker.git
+                '''
+            }
+        }
+
+        stage('Build Docker Image on Remote Host') {
+            steps {
+                sh '''
+                    cd Docker/Dockerfiles/Dockerfile-Projects
+                    docker build -f Dockerfile-ms2 -t dsoc3-webapp:${BUILD_ID} .
+                '''
+            }
+        }
+
+        stage('Run Container on Remote Host') {
+            steps {
+                sh '''
+                    echo Redeploying container: dsoc3-webapp
+                    docker rm -f dsoc3-webapp || true
+                    docker run -d --name dsoc3-webapp -p 9191:8080 dsoc3-webapp:${BUILD_ID}
+                    docker ps | grep dsoc3-webapp
+                '''
+            }
+        }
+    }
+}

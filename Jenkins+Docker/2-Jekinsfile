@@ -1,0 +1,30 @@
+pipeline {
+    agent any
+    stages {
+        stage('VM Build') {
+            steps {
+                sh """
+                    echo Building VM APP
+                    java --version
+                    pwd
+                """
+            } //EO steps
+        } // EO stage VM Build
+        stage('Maven Build') {
+            agent {
+                dockerContainer{
+                    image 'maven'
+                }
+            }
+            steps {
+                sh """
+                    echo Building Maven APP
+                    java --version
+                    mvn --version
+                    pwd
+                """
+            } //EO steps
+        } // EO stage VM Build
+    }// EO stages
+}// EO pipeline
+
